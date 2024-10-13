@@ -1,14 +1,28 @@
 import { Request, Response } from 'express';
 import MessageService from '../services/messageService';
+import { validateRequest } from '../utils/requestValidation';
 
-const messageService = new MessageService();
+export class MessageController {
+    private messageService: MessageService;
 
-export const echoAtTime = async (req: Request, res: Response) => {
-    const { time, message } = req.body;
-    try {
-        await messageService.scheduleMessage(message, time);
-        res.status(200).send('Message scheduled');
-    } catch (error) {
-        res.status(500).send('Error scheduling message');
+    constructor(messageService: MessageService) {
+        this.messageService = messageService;
     }
-};
+
+    public async echoAtTime(req: Request, res: Response): Promise<void> {
+        const { time, message } = req.body;
+        const { isValid, errors } = validateRequest(time, message);
+
+        if (!isValid) {
+            res.status(400).send(errors);
+            return;
+        }
+
+        try {
+            await this.messageService.scheduleMessage(message, time);
+            res.status(200).send('Message scheduled successfully.');
+        } catch (err) {
+            res.status(500).send('Internal Server Error');
+        }
+    }
+}

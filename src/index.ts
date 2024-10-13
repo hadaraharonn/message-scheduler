@@ -1,9 +1,11 @@
 import express from 'express';
 import messageRoutes from './routes/messageRoutes';
 import MessageService from './services/messageService';
+import { ConsoleMessageHandler } from './utils/MessageHandler';
 
 const app = express();
-const messageService = new MessageService();
+const messageHandler = new ConsoleMessageHandler();
+const messageService = new MessageService(messageHandler);
 
 app.use(express.json());
 app.use('/api', messageRoutes);
