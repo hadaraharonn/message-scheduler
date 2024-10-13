@@ -4,7 +4,8 @@ import MessageDTO from '../models/messageDTO';
 
 class RedisApi {
   private redisClient: Redis.Redis;
-  private readonly scheduledMessages = 'scheduledMessages';
+  private readonly sortedScheduledMessages = 'scheduledMessages';
+  private readonly inProcessMessageQueue = 'messageQueue';
 
   constructor() {
     this.redisClient = new Redis(config.redisUrl);
@@ -18,7 +19,7 @@ class RedisApi {
     try {
       const messageJson = JSON.stringify(messageDTO);
       await this.redisClient.zadd(
-        this.scheduledMessages,
+        this.sortedScheduledMessages,
         messageDTO.timestamp.getTime().toString(),
         messageJson,
       );
@@ -32,7 +33,7 @@ class RedisApi {
     try {
       const now = Date.now();
       const messages = await this.redisClient.zrangebyscore(
-        this.scheduledMessages,
+        this.sortedScheduledMessages,
         0,
         now,
         'LIMIT',
@@ -45,8 +46,12 @@ class RedisApi {
       }
 
       const messageDTO = JSON.parse(messages[0]) as MessageDTO;
-      await this.redisClient.lpush('messageQueue', messages[0]);
-      await this.redisClient.zrem(this.scheduledMessages, messages[0]);
+
+      const transaction = this.redisClient.multi();
+      transaction.lpush(this.inProcessMessageQueue, messages[0]);
+      transaction.zrem(this.sortedScheduledMessages, messages[0]);
+
+      await transaction.exec();
 
       return messageDTO;
     } catch (error) {
@@ -55,36 +60,40 @@ class RedisApi {
     }
   }
 
-  public async acquireLock(message: string): Promise<boolean> {
+  public async acquireLock(id: string): Promise<string | null> {
     try {
-      const lockKey = `lock:${message}`;
+      const lockKey = `lock:${id}`;
+      const lockValue = `${Date.now()}-${Math.random()}`;
       const lockAcquired = await this.redisClient.set(
         lockKey,
-        'locked',
+        lockValue,
         'NX',
         'EX',
-        60,
+        config.redisLockExpiration,
       );
-      return lockAcquired !== null;
+      return lockAcquired ? lockValue : null;
     } catch (error) {
       console.error('Error acquiring lock:', error);
       throw error;
     }
   }
 
-  public async releaseLock(message: string): Promise<void> {
+  public async releaseLock(id: string, lockValue: string): Promise<void> {
     try {
-      const lockKey = `lock:${message}`;
-      await this.redisClient.del(lockKey);
+      const lockKey = `lock:${id}`;
+      const currentValue = await this.redisClient.get(lockKey);
+      if (currentValue === lockValue) {
+        await this.redisClient.del(lockKey);
+      }
     } catch (error) {
       console.error('Error releasing lock:', error);
       throw error;
     }
   }
 
-  public async deleteMessage(message: string): Promise<void> {
+  public async deleteMessage(id: string): Promise<void> {
     try {
-      await this.redisClient.lrem('messageQueue', 1, message);
+      await this.redisClient.lrem(this.inProcessMessageQueue, 1, id);
     } catch (error) {
       console.error('Error deleting message:', error);
       throw error;

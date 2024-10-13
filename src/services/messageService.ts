@@ -20,11 +20,11 @@ class MessageService {
   public async processMessages(): Promise<void> {
     const messageDTO = await this.redisApi.popMessage();
     if (messageDTO) {
-      const lockAcquired = await this.redisApi.acquireLock(messageDTO.message);
-      if (lockAcquired) {
+      const lockAcquired = await this.redisApi.acquireLock(messageDTO.id);
+      if (lockAcquired !== null) {
         await this.messageHandler.handleMessage(messageDTO.message);
-        await this.redisApi.releaseLock(messageDTO.message);
-        await this.redisApi.deleteMessage(messageDTO.message);
+        await this.redisApi.releaseLock(messageDTO.id, lockAcquired);
+        await this.redisApi.deleteMessage(messageDTO.id);
       }
     }
   }

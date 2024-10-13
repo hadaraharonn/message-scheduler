@@ -8,12 +8,14 @@
     },
     "dependencies": {
         "express": "^4.17.1",
-        "ioredis": "^4.27.6"
+        "ioredis": "^4.27.6",
+        "uuid": "^10.0.0"
     },
     "devDependencies": {
         "@types/express": "^5.0.0",
         "@types/ioredis": "^4.28.10",
         "@types/node": "^22.7.5",
+        "@types/uuid": "^10.0.0",
         "prettier": "^3.3.3",
         "ts-node": "^10.9.2",
         "ts-node-dev": "^1.1.8",
