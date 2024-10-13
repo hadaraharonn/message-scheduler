@@ -6,8 +6,8 @@ class MessageService {
   private redisApi: RedisApi;
   private messageHandler: MessageHandler;
 
-  constructor(messageHandler: MessageHandler) {
-    this.redisApi = new RedisApi();
+  constructor(redisApi: RedisApi, messageHandler: MessageHandler) {
+    this.redisApi = redisApi;
     this.messageHandler = messageHandler;
   }
 
