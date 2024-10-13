@@ -12,22 +12,28 @@ const messageController = new MessageController(messageService);
 const app = express();
 const router = express.Router();
 
-router.post('/echoAtTime', messageController.echoAtTime.bind(messageController));
+router.post(
+  '/echoAtTime',
+  messageController.echoAtTime.bind(messageController),
+);
 
 app.use(express.json());
 app.use('/api', router);
 app.use(errorHandler);
 
 const checkMessages = async () => {
-    await messageService.processMessages();
+  await messageService.processMessages();
 };
 
 const interval = Number(config.messagePollingInterval);
 
 if (!isNaN(interval)) {
-    setInterval(checkMessages, interval);
+  setInterval(checkMessages, interval);
 } else {
-    console.error('Invalid messagePollingInterval:', config.messagePollingInterval);
+  console.error(
+    'Invalid messagePollingInterval:',
+    config.messagePollingInterval,
+  );
 }
 
 export default app;
