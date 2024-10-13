@@ -2,7 +2,7 @@ import { Request, Response } from 'express';
 import MessageService from '../services/messageService';
 import { validateRequest } from '../utils/requestValidation';
 
-export class MessageController {
+class MessageController {
     private messageService: MessageService;
 
     constructor(messageService: MessageService) {
@@ -20,9 +20,11 @@ export class MessageController {
 
         try {
             await this.messageService.scheduleMessage(message, time);
-            res.status(200).send('Message scheduled successfully.');
+            res.status(200).send('Message scheduled successfully');
         } catch (err) {
             res.status(500).send('Internal Server Error');
         }
     }
 }
+
+export default MessageController;

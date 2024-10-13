@@ -1,6 +1,6 @@
 import RedisApi from '../repositories/redisApi';
 import MessageDTO from '../models/messageDTO';
-import { MessageHandler } from '../utils//MessageHandler';
+import { MessageHandler } from '../utils/messageHandler';
 
 class MessageService {
     private redisApi: RedisApi;
