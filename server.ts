@@ -1,10 +1,10 @@
 import express from 'express';
-import MessageController from './controllers/messageController';
-import MessageService from './services/messageService';
-import RedisApi from './repositories/redisApi';
-import { errorHandler } from './middleware/errorHandler';
-import { config } from './config';
-import { ConsoleMessageHandler } from './utils/messageHandler';
+import MessageController from './src/controllers/messageController';
+import MessageService from './src/services/messageService';
+import RedisApi from './src/repositories/redisApi';
+import { errorHandler } from './src/middleware/errorHandler';
+import { config } from './src/config';
+import { ConsoleMessageHandler } from './src/utils/messageHandler';
 
 const redisApi = new RedisApi();
 const messageHandler = new ConsoleMessageHandler();
@@ -27,19 +27,19 @@ const checkMessages = async () => {
   await messageService.processMessages();
 };
 
-const interval = Number(config.messagePollingInterval);
+const interval = Number(config.messagePollingIntervalMs);
 
 if (!isNaN(interval)) {
   setInterval(checkMessages, interval);
 } else {
   console.error(
     'Invalid messagePollingInterval:',
-    config.messagePollingInterval,
+    config.messagePollingIntervalMs,
   );
 }
 
 app.listen(config.port, () => {
-    console.log(`Server is running on http://localhost:${config.port}`);
+  console.log(`Server is running on http://localhost:${config.port}`);
 });
 
 export default app;

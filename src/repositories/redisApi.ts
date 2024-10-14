@@ -1,101 +1,82 @@
 import Redis from 'ioredis';
-import { config } from '../config';
 import MessageDTO from '../models/messageDTO';
+import { config } from '../config';
 
 class RedisApi {
-  private redisClient: Redis.Redis;
+  private redisClient: Redis;
   private readonly sortedScheduledMessages = 'scheduledMessages';
-  private readonly inProcessMessageQueue = 'messageQueue';
 
   constructor() {
     this.redisClient = new Redis(config.redisUrl);
 
-    this.redisClient.on('error', (err) => {
+    this.redisClient.on('error', (err: Error) => {
       console.error('Redis connection error:', err);
     });
   }
 
   public async addMessageToSortedSet(messageDTO: MessageDTO): Promise<void> {
     try {
-      const messageJson = JSON.stringify(messageDTO);
       await this.redisClient.zadd(
         this.sortedScheduledMessages,
-        messageDTO.timestamp.getTime().toString(),
-        messageJson,
+        messageDTO.timestamp.getTime(),
+        JSON.stringify(messageDTO),
       );
     } catch (error) {
-      console.error('Error adding message to sorted set:', error);
+      console.error('Error adding message to sorted set', error);
       throw error;
     }
   }
 
-  public async popMessage(): Promise<MessageDTO | null> {
+  public async getMessagesToProcess(): Promise<MessageDTO[]> {
     try {
       const now = Date.now();
       const messages = await this.redisClient.zrangebyscore(
         this.sortedScheduledMessages,
         0,
         now,
-        'LIMIT',
-        0,
-        1,
       );
-
-      if (messages.length === 0) {
-        return null;
-      }
-
-      const messageDTO = JSON.parse(messages[0]) as MessageDTO;
-
-      const transaction = this.redisClient.multi();
-      transaction.lpush(this.inProcessMessageQueue, messages[0]);
-      transaction.zrem(this.sortedScheduledMessages, messages[0]);
-
-      await transaction.exec();
-
-      return messageDTO;
+      return messages.map((message) => JSON.parse(message) as MessageDTO);
     } catch (error) {
-      console.error('Error popping message:', error);
+      console.error('Error getting messages to process', error);
       throw error;
     }
   }
 
-  public async acquireLock(id: string): Promise<string | null> {
+  public async deleteMessage(messageDTO: MessageDTO): Promise<void> {
     try {
-      const lockKey = `lock:${id}`;
-      const lockValue = `${Date.now()}-${Math.random()}`;
-      const lockAcquired = await this.redisClient.set(
-        lockKey,
-        lockValue,
+      await this.redisClient.zrem(
+        this.sortedScheduledMessages,
+        JSON.stringify(messageDTO),
+      );
+    } catch (error) {
+      console.error('Error deleting message', error);
+      throw error;
+    }
+  }
+
+  public async acquireLock(key: string, value: string): Promise<boolean> {
+    try {
+      const result = await this.redisClient.set(
+        key,
+        value,
+        'PX',
+        config.redisLockExpirationMs,
         'NX',
-        'EX',
-        config.redisLockExpiration,
       );
-      return lockAcquired ? lockValue : null;
+
+      return result === 'OK';
     } catch (error) {
-      console.error('Error acquiring lock:', error);
+      console.error('Error acquiring lock', error);
       throw error;
     }
   }
 
-  public async releaseLock(id: string, lockValue: string): Promise<void> {
+  public async releaseLock(key: string, value: string): Promise<void> {
     try {
-      const lockKey = `lock:${id}`;
-      const currentValue = await this.redisClient.get(lockKey);
-      if (currentValue === lockValue) {
-        await this.redisClient.del(lockKey);
-      }
+      const currentValue = await this.redisClient.get(key);
+      if (currentValue === value) await this.redisClient.del(key);
     } catch (error) {
-      console.error('Error releasing lock:', error);
-      throw error;
-    }
-  }
-
-  public async deleteMessage(id: string): Promise<void> {
-    try {
-      await this.redisClient.lrem(this.inProcessMessageQueue, 1, id);
-    } catch (error) {
-      console.error('Error deleting message:', error);
+      console.error('Error releasing lock', error);
       throw error;
     }
   }
