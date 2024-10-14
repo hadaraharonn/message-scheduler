@@ -2,15 +2,14 @@
 
 ---
 
-> **Message Scheduler** is a Node.js-based backend service designed to handle the scheduling and delayed execution of messages. By leveraging Redis for persistence, this application ensures messages are reliably stored and processed at the specified time. Designed with scalability and robustness in mind, this service is built to efficiently manage high volumes of messages and ensure that each message is processed exactly once, making it suitable for large-scale, distributed systems.
+> **Message Scheduler** is a Node.js-based backend service designed to handle the scheduling and delivery of messages. By leveraging Redis for persistence, this application ensures messages are reliably stored and processed at the specified time. Designed with scalability and robustness in mind, this service is built to efficiently manage high volumes of messages and ensure that each message is processed exactly once, making it suitable for large-scale, distributed systems.
 
 ## Core Features
 
-* Message Scheduling: REST API for scheduling messages to be printed at a future time.
-* Redis-Based Persistence: Uses Redis to store scheduled messages, ensuring reliability across server restarts and crashes.
-* Scalable Architecture: Built to handle multiple server instances working in parallel, with load balancing and fault tolerance.
-* Configurable Message Handlers: Output mechanism is flexible and can be customized, allowing the service to log messages or perform other actions.
-* Error Handling & Validation: Implements robust error-handling mechanisms and validation checks to ensure data integrity and service reliability.
+* **Message Scheduling**: REST API for scheduling messages to be printed at a future time.
+* **Redis-Based Persistence**: Uses Redis to store scheduled messages, ensuring reliability across server restarts and crashes.
+* **Scalable Architecture**: Built to handle multiple server instances working in parallel, with load balancing and fault tolerance.
+* **Configurable Message Handlers**: Output mechanism is flexible and can be customized, allowing the service to log messages or perform other actions.
 
 ## Prerequisites
 
