@@ -56,6 +56,7 @@ class MessageService {
                 messageDTO,
                 this.maxMessageDeletionRetries,
               );
+              console.log(`Message processed successfully`);
             } finally {
               await this.redisApi.releaseLock(lockKey, lockValue);
             }
