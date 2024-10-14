@@ -9,7 +9,7 @@
     },
     "dependencies": {
         "express": "^4.17.1",
-        "ioredis": "^4.27.6",
+        "ioredis": "^5.4.1",
         "uuid": "^10.0.0"
     },
     "devDependencies": {
@@ -22,7 +22,7 @@
         "prettier": "^3.3.3",
         "ts-jest": "^29.2.5",
         "ts-node": "^10.9.2",
-        "ts-node-dev": "^1.1.8",
+        "ts-node-dev": "^2.0.0",
         "typescript": "^5.6.3"
     }
 }
