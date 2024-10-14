@@ -7,7 +7,14 @@ class RedisApi {
   private readonly sortedScheduledMessages = 'scheduledMessages';
 
   constructor() {
-    this.redisClient = new Redis(config.redisUrl);
+    this.redisClient = new Redis({
+      host: config.redisUrl,
+      port: config.redisPort as number,
+      retryStrategy: (times) => {
+        const delay = Math.min(times * 50, 2000);
+        return delay;
+      },
+    });
 
     this.redisClient.on('error', (err: Error) => {
       console.error('Redis connection error:', err);
@@ -27,13 +34,19 @@ class RedisApi {
     }
   }
 
-  public async getMessagesToProcess(): Promise<MessageDTO[]> {
+  public async getMessagesToProcess(
+    timestamp: number,
+    batchSize: number,
+    start: number = 0,
+  ): Promise<MessageDTO[]> {
     try {
-      const now = Date.now();
       const messages = await this.redisClient.zrangebyscore(
         this.sortedScheduledMessages,
         0,
-        now,
+        timestamp,
+        'LIMIT',
+        start,
+        batchSize,
       );
       return messages.map((message) => JSON.parse(message) as MessageDTO);
     } catch (error) {
