@@ -39,6 +39,7 @@ This will start a Redis instance on port 6379.
 1. Clone the repository:
     ```sh
     git clone https://github.com/hadaraharonn/message-scheduler.git
+    cd message-scheduler
     ```
 
 2. Install the dependencies:
