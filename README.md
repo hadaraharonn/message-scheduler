@@ -82,6 +82,19 @@ curl -X POST http://localhost:3000/api/echoAtTime \
 }'
 ```
 
+## API Status Codes
+
+The API uses standard HTTP status codes to indicate the success or failure of an API request. Below is a summary of the status codes used by the API:
+
+### Success Responses
+
+- **201 Created**: The request was successful, and a new resource was created.
+
+### Error Responses
+
+- **400 Bad Request**: The request could not be understood or was missing required parameters. This status code is used when there is a validation error in the request.
+- **500 Internal Server Error**: An error occurred on the server. This status code is used when an unexpected error occurs while processing the request.
+
 ### Response Examples
 
 **Success Response:**

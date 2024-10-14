@@ -1,7 +1,7 @@
 import { Response } from 'express';
 
 export const sendSuccessResponse = (res: Response, message: string) => {
-    res.status(200).json({
+    res.status(201).json({
         status: 'success',
         message: message,
         error: null,
