@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import MessageService from '../services/messageService';
 import { validateRequest } from '../utils/requestValidation';
+import { sendErrorResponse, sendSuccessResponse } from '../utils/responseUtils';
 
 class MessageController {
   private messageService: MessageService;
@@ -14,16 +15,16 @@ class MessageController {
     const { isValid, errors } = validateRequest(time, message);
 
     if (!isValid) {
-      res.status(400).send(errors);
+      sendErrorResponse(res, 400, 'Validation Error', errors);
       return;
     }
 
     try {
       await this.messageService.scheduleMessage(message, time);
-      res.status(200).send('Message scheduled successfully');
+      sendSuccessResponse(res, 'Message scheduled successfully');
     } catch (error) {
       console.error('Error scheduling message', error);
-      res.status(500).send('Internal Server Error');
+      sendErrorResponse(res, 500, 'Internal Server Error', (error as Error).message || 'An unexpected error occurred.');
     }
   }
 }

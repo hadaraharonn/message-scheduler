@@ -7,7 +7,7 @@ export function validateRequest(time: string, message: string) {
   }
 
   if (typeof message !== 'string' || message.length < 1) {
-    errors.push('content must be a non-empty string');
+    errors.push('message must be a non-empty string');
   }
 
   return {
