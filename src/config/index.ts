@@ -3,4 +3,5 @@ export const config = {
   port: process.env.PORT || 3000,
   messagePollingIntervalMs: process.env.MESSAGE_POLLING_INTERVAL || 1000,
   redisLockExpirationMs: process.env.LOCK_EXPIRATION || 60000,
+  maxMessageDeletionRetries: process.env.MAX_MESSAGE_DELETION_RETRIES || 3
 };

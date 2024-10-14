@@ -27,7 +27,7 @@ const checkMessages = async () => {
   await messageService.processMessages();
 };
 
-const interval = Number(config.messagePollingIntervalMs);
+const interval = config.messagePollingIntervalMs as number;
 
 if (!isNaN(interval)) {
   setInterval(checkMessages, interval);
